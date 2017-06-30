@@ -13,7 +13,8 @@
         },
         templateName: 'conversation-preview',
         events: {
-            'click': 'select'
+            'click': 'select',
+            'contextmenu': 'contextMenu'
         },
         initialize: function() {
             // auto update
@@ -28,6 +29,17 @@
             extension.windows.onClosed(this.stopListening.bind(this));
             this.timeStampView = new Whisper.TimestampView({brief: true});
             this.model.updateLastMessage();
+        },
+
+        contextMenu: function(e) {
+            e.preventDefault();
+            this.open_context_menu(e, [{
+                label: i18n('deleteConversation'),
+                action: function() {
+                    this.confirm(i18n('deleteConversationConfirmation')).then(function() {
+                        this.model.destroyMessages();
+                    }.bind(this));
+                }}]);
         },
 
         markSelected: function() {

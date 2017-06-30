@@ -25,6 +25,12 @@
                 $el.prependTo(this.el);
                 conversation.trigger('opened');
             }
+        },
+        onChangeActiveAt: function(conversation) {
+            var $el = this.$('#conversation-' + conversation.cid);
+            if ($el && $el.length > 0 && !conversation.get('active_at')) {
+                $el.remove();
+            }
         }
     });
 
@@ -75,16 +81,21 @@
             this.applyTheme();
             this.$el.attr('tabindex', '1');
             new Whisper.FontSizeView({ el: this.$el });
-            this.conversation_stack = new Whisper.ConversationStack({
-                el: this.$('.conversation-stack'),
-                model: { window: options.window }
-            });
 
             var inboxCollection = getInboxCollection();
 
             inboxCollection.on('messageError', function() {
                 this.networkStatusView.render();
             }.bind(this));
+
+            this.conversation_stack = new Whisper.ConversationStack({
+                el: this.$('.conversation-stack'),
+                model: { window: options.window }
+            });
+
+            this.conversation_stack.listenTo(inboxCollection,
+                                             'add change:active_at',
+                                             this.conversation_stack.onChangeActiveAt);
 
             this.inboxListView = new Whisper.ConversationListView({
                 el         : this.$('.inbox'),
